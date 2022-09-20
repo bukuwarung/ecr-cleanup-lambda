@@ -87,6 +87,10 @@ def discover_delete_images(regionname):
     for image in running_containers:
         print(image)
 
+    total_image_count = 0
+    total_untagged_image_count = 0
+    total_image_to_delete_count = 0
+
     for repository in repositories:
         print("------------------------")
         print("Starting with repository :" + repository['repositoryUri'])
@@ -105,7 +109,10 @@ def discover_delete_images(regionname):
                     append_to_list(deletesha, image['imageDigest'])
 
         print("Total number of images found: {}".format(len(tagged_images) + len(deletesha)))
+        total_image_count += (len(tagged_images) + len(deletesha))
+
         print("Number of untagged images found {}".format(len(deletesha)))
+        total_untagged_image_count += len(deletesha)
 
         tagged_images.sort(key=lambda k: k['imagePushedAt'], reverse=True)
 
@@ -127,10 +134,12 @@ def discover_delete_images(regionname):
                     if "latest" not in tag and ignore_tags_regex.search(tag) is None:
                         if not running_sha or image['imageDigest'] not in running_sha:
                             append_to_list(deletesha, image['imageDigest'])
-                            append_to_tag_list(deletetag, {"imageUrl": repository['repositoryUri'] + ":" + tag,
+                            append_to_tag_list(deletetag, {"imageUrl": repository['repositoryUri'].split("/")[-1] + ":" + tag,
                                                            "pushedAt": image["imagePushedAt"]})
         if deletesha:
             print("Number of images to be deleted: {}".format(len(deletesha)))
+            total_image_to_delete_count += len(deletesha)
+
             delete_images(
                 ecr_client,
                 deletesha,
@@ -140,6 +149,9 @@ def discover_delete_images(regionname):
             )
         else:
             print("Nothing to delete in repository : " + repository['repositoryName'])
+    print("Total number of images found in the AWS account {}".format(total_image_count))
+    print("Total number of untagged images found in the AWS account {}".format(total_untagged_image_count))
+    print("Total number of images to be deleted from the AWS account {}".format(total_image_to_delete_count))
 
 
 def append_to_list(image_digest_list, repo_id):
@@ -179,7 +191,7 @@ def delete_images(ecr_client, deletesha, deletetag, repo_id, name):
                 print("imageIds:", end='')
                 print(deletesha_chunk)
     if deletetag:
-        print("Image URLs that are marked for deletion:")
+        print("Image tags that are marked for deletion:")
         for ids in deletetag:
             print("- {} - {}".format(ids["imageUrl"], ids["pushedAt"]))
 

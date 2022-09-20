@@ -24,11 +24,11 @@ Resources:
         Schedule:
           Type: Schedule
           Properties:
-            Schedule: cron(0 22 * * ? *)
+            Schedule: cron(0 9 ? * 2#1 *) # 9:00 AM on the first Monday of each month
       Environment:
         Variables:
-          REGION: None
-          DRYRUN: True
+          REGION: ap-southeast-1
+          DRYRUN: False
           IMAGES_TO_KEEP: 100
   LAMBDAROLE:
       Type: AWS::IAM::Role
