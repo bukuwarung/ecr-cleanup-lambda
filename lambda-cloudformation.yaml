@@ -14,9 +14,9 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: main.handler
-      Runtime: python2.7
+      Runtime: python3.9
       Description: ECR Cleanup Lambda
-      CodeUri: ./
+      CodeUri: s3://bw-dev-ecr-cleanup-lambda/Archive.zip
       MemorySize: 128
       Timeout: 300
       Role: !GetAtt LAMBDAROLE.Arn
